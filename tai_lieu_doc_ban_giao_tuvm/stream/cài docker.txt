@@ -1,0 +1,7 @@
+ Cài đặt Docker desktop: 
+1.wsl --install
+2. https://www.docker.com/products/docker-desktop
+3.Sau khi cài xong chạy docker --version để kiểm tra
+4. docker run --name redis-test -p 6379:6379 -d redis
+docker exec -it redis-test redis-cli ping
+-> chạy thử container redis

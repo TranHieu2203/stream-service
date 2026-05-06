@@ -1,0 +1,10 @@
+node_modules
+package-lock.json
+build
+logs/*
+public/files/*
+public/list.txt
+npm-debug.log
+.nyc
+.env
+.DS_Store

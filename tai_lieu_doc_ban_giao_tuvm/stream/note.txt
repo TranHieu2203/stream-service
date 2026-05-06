@@ -1,0 +1,3 @@
+GStreamer: dùng để thu nhận video real-time từ WebRTC, camera hoặc thiết bị hiện trường.
+FFmpeg: dùng để convert video (ví dụ WebM ➝ MP4), nén lại, snapshot hình ảnh, hoặc gửi lên server.
+Socket: nó giúp xử lý real-time communication giữa client và server một cách nhanh gọn.

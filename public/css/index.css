@@ -1,0 +1,86 @@
+body {
+    background: linear-gradient(135deg, #005992 0%, #003d66 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+.main-box {
+    text-align: center;
+    padding: 40px;
+    max-width: 600px;
+    margin: 50px auto;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease;
+}
+.main-box:hover {
+    transform: translateY(-5px);
+}
+.vbi-logo {
+    width: 180px;
+    margin-bottom: 25px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+.main-title {
+    font-size: 28px;
+    font-weight: 600;
+    color: #005992;
+    margin-bottom: 15px;
+    letter-spacing: 0.5px;
+}
+.main-desc {
+    color: #666;
+    margin-bottom: 35px;
+    line-height: 1.6;
+    font-size: 16px;
+}
+.user-info {
+    margin: 25px 0;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border: 1px solid #e9ecef;
+}
+.user-name {
+    color: #005992;
+    font-weight: 600;
+    font-size: 18px;
+}
+.btn-main {
+    background: linear-gradient(135deg, #005992 0%, #003d66 100%);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 89, 146, 0.2);
+}
+.btn-main:hover {
+    background: linear-gradient(135deg, #003d66 0%, #002d4d 100%);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 89, 146, 0.3);
+}
+.btn-logout {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.2);
+    margin-top: 15px;
+}
+.btn-logout:hover {
+    background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(220, 53, 69, 0.3);
+}

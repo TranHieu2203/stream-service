@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng nhập hệ thống VBI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/login.css" rel="stylesheet">
+</head>
+<body>
+    <div class="login-box">
+        <img src="/assets/svgs/logo_vbi.svg" alt="VBI" class="vbi-logo">
+        <div class="login-title">Đăng nhập VBI</div>
+        <div class="login-desc">Vui lòng đăng nhập bằng tài khoản Microsoft Azure AD để sử dụng hệ thống bảo hiểm VBI.</div>
+        <div id="error-message" class="alert alert-danger" role="alert" style="display: none;"></div>
+        <button class="btn btn-login" onclick="loginAAD()">
+            Đăng nhập qua AAD
+        </button>
+    </div>
+    <script src="/js/login.js"></script>
+</body>
+</html>

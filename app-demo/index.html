@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>App Demo – Stream & Chụp ảnh</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:sans-serif;background:#111;color:#eee;display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:24px 16px;gap:16px}
+    h1{font-size:1.1rem;color:#888;letter-spacing:1px}
+
+    .config{display:flex;gap:8px;flex-wrap:wrap;width:100%;max-width:720px}
+    .config input{flex:1;min-width:180px;padding:8px 12px;border-radius:6px;border:1px solid #333;background:#1e1e1e;color:#eee;font-size:0.9rem}
+    .config input::placeholder{color:#555}
+
+    #video-wrap{position:relative;width:100%;max-width:720px;background:#000;border-radius:10px;overflow:hidden;aspect-ratio:16/9}
+    video{width:100%;height:100%;object-fit:cover;display:block}
+    #status{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.6);padding:4px 10px;border-radius:20px;font-size:.78rem;display:flex;align-items:center;gap:6px}
+    #dot{width:8px;height:8px;border-radius:50%;background:#555}
+    #dot.live{background:#f00;animation:blink 1s infinite}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+    #session-id-display{position:absolute;bottom:10px;left:10px;background:rgba(0,0,0,.6);padding:4px 10px;border-radius:20px;font-size:.72rem;color:#aef}
+
+    .controls{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+    button{padding:10px 22px;border:none;border-radius:8px;font-size:.9rem;cursor:pointer;transition:opacity .2s;font-weight:700}
+    button:disabled{opacity:.35;cursor:not-allowed}
+    #btn-start{background:#22c55e;color:#000}
+    #btn-stop{background:#ef4444;color:#fff}
+    #btn-capture{background:#3b82f6;color:#fff}
+
+    canvas{display:none}
+
+    #log-wrap{width:100%;max-width:720px}
+    #log-label{font-size:.8rem;color:#555;margin-bottom:4px}
+    #log{height:100px;overflow-y:auto;background:#0a0a0a;border-radius:6px;padding:6px 10px;font-size:.75rem;font-family:monospace}
+    .log-info{color:#aaa}.log-success{color:#22c55e}.log-error{color:#f87171}
+
+    #photos-label{align-self:flex-start;font-size:.85rem;color:#666;max-width:720px;width:100%;display:none}
+    #photos{display:flex;flex-wrap:wrap;gap:10px;width:100%;max-width:720px}
+    .photo-item{position:relative;border-radius:6px;overflow:hidden;border:2px solid #333}
+    .photo-item img{display:block;width:180px;height:101px;object-fit:cover}
+    .photo-item a{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.65);color:#fff;font-size:.72rem;text-align:center;padding:3px 0;text-decoration:none}
+    .photo-item a:hover{background:rgba(59,130,246,.8)}
+  </style>
+</head>
+<body>
+
+  <h1>STREAM &amp; CHỤP ẢNH — Demo</h1>
+
+  <div class="config">
+    <input id="server-url" type="text" placeholder="URL server (vd: http://localhost:3000)" value="http://localhost:3000">
+    <input id="source" type="text" placeholder="Source (vd: app-demo)" value="app-demo">
+  </div>
+
+  <div id="video-wrap">
+    <video id="video" autoplay playsinline muted></video>
+    <div id="status"><span id="dot"></span><span id="status-text">Chưa kết nối</span></div>
+    <div id="session-id-display"></div>
+  </div>
+
+  <canvas id="canvas"></canvas>
+
+  <div class="controls">
+    <button id="btn-start">▶ Bắt đầu stream</button>
+    <button id="btn-stop" disabled>■ Dừng</button>
+    <button id="btn-capture" disabled>📷 Chụp ảnh</button>
+  </div>
+
+  <div id="log-wrap">
+    <div id="log-label">Log:</div>
+    <div id="log"></div>
+  </div>
+
+  <div id="photos-label">Ảnh đã chụp:</div>
+  <div id="photos"></div>
+
+  <script src="./bundle.js"></script>
+</body>
+</html>

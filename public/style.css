@@ -1,0 +1,36 @@
+body{
+    background: #303952;
+}
+table td{
+    border: 1px solid #63cdda;
+}
+h1{
+    color: yellowgreen;
+}
+h4{
+    color: aliceblue;
+}
+.thead{
+    color: aquamarine;
+}
+.tstats{
+    color: #f7d794;
+}
+#tt_process{
+    color: #e77f67;
+}
+#tt_session{
+    color: #26de81;
+}
+#list-session li{
+    color: #ea8685;
+}
+#list-file li a{
+    color: #20bf6b;
+}
+.f_session{
+    color: #26de81;
+}
+.f_name a{
+    color: coral;
+}

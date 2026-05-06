@@ -1,0 +1,395 @@
+body {
+    background: #f8f9fa;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.header {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.vbi-logo {
+    height: 40px;
+    margin-right: 1rem;
+}
+
+.dashboard-title {
+    display: inline-block;
+    margin: 0;
+    vertical-align: middle;
+}
+
+.user-info {
+    float: right;
+    display: flex;
+    align-items: center;
+}
+
+.user-name {
+    margin-right: 1rem;
+}
+
+.btn-logout {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+}
+
+.btn-logout:hover {
+    background-color: #c82333;
+    color: white;
+}
+
+.container {
+    padding: 30px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 1.5rem;
+    border: none;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.card-title {
+    color: #495057;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.progress {
+    height: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.progress-bar {
+    transition: width 0.6s ease;
+}
+
+.table {
+    margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #005992;
+    padding: 15px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.table td {
+    vertical-align: middle;
+    padding: 12px 15px;
+    border-bottom: 1px solid #e9ecef;
+    color: #495057;
+}
+
+.table tr:last-child td {
+    border-bottom: none;
+}
+
+h4 {
+    color: #005992;
+    font-weight: 600;
+    margin-bottom: 20px;
+    font-size: 20px;
+    letter-spacing: 0.3px;
+}
+
+/* Custom styles for stats */
+#tt_session, #tt_streamer, #tt_producer, #tt_consumer, #tt_socketclient, #tt_process {
+    font-weight: 600;
+    color: #005992;
+}
+
+/* Style for file links */
+.f_name a {
+    color: #005992;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.f_name a:hover {
+    color: #003d66;
+    text-decoration: underline;
+}
+
+/* Style for session list */
+#list-session li {
+    color: #495057;
+    padding: 8px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+#list-session li:last-child {
+    border-bottom: none;
+}
+
+/* Monitoring Components */
+.monitoring-card {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 15px;
+    height: 100%;
+    transition: all 0.3s ease;
+}
+
+.monitoring-card:hover {
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.monitoring-card h6 {
+    color: #005992;
+    font-weight: 600;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.progress {
+    height: 8px;
+    border-radius: 4px;
+    background-color: #e9ecef;
+}
+
+.progress-bar {
+    background: linear-gradient(135deg, #005992 0%, #003d66 100%);
+    transition: width 0.5s ease;
+}
+
+#cpu-details, #memory-details {
+    color: #6c757d;
+    font-size: 12px;
+}
+
+#system-info small, #process-info small {
+    color: #495057;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+/* Log Container */
+.log-container {
+    background: #1e1e1e;
+    border-radius: 8px;
+    padding: 15px;
+    max-height: 400px;
+    overflow-y: auto;
+    font-family: 'Courier New', monospace;
+}
+
+.log-content {
+    color: #ffffff;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.log-entry {
+    padding: 2px 0;
+    border-bottom: 1px solid #333;
+}
+
+.log-entry:last-child {
+    border-bottom: none;
+}
+
+.log-timestamp {
+    color: #888;
+    margin-right: 10px;
+}
+
+.log-message {
+    color: #ffffff;
+}
+
+.log-error {
+    color: #ff6b6b;
+}
+
+.log-warning {
+    color: #ffd93d;
+}
+
+.log-info {
+    color: #6bcf7f;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .monitoring-card {
+        margin-bottom: 15px;
+    }
+    
+    .log-container {
+        max-height: 300px;
+    }
+}
+
+#disk-usage-bar {
+    transition: all 0.3s ease;
+}
+
+#disk-usage-bar.bg-success {
+    background-color: #28a745;
+}
+
+#disk-usage-bar.bg-warning {
+    background-color: #ffc107;
+}
+
+#disk-usage-bar.bg-danger {
+    background-color: #dc3545;
+}
+
+small {
+    color: #6c757d;
+}
+
+#last-update {
+    font-weight: 500;
+    color: #495057;
+}
+
+/* Responsive table styles */
+.table-responsive {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media screen and (max-width: 768px) {
+    .table {
+        display: block;
+    }
+
+    .table thead {
+        display: none;
+    }
+
+    .table tbody {
+        display: block;
+        width: 100%;
+    }
+
+    .table tr {
+        display: block;
+        margin-bottom: 1rem;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        background: white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .table td {
+        display: flex;
+        padding: 0.75rem;
+        border: none;
+        border-bottom: 1px solid #e9ecef;
+        position: relative;
+        padding-left: 50%;
+        text-align: right;
+    }
+
+    .table td:last-child {
+        border-bottom: none;
+    }
+
+    .table td:before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0.75rem;
+        width: 45%;
+        padding-right: 10px;
+        text-align: left;
+        font-weight: 600;
+        color: #005992;
+    }
+
+    /* Adjust card layout for mobile */
+    .card {
+        margin-bottom: 1rem;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+
+    /* Make progress bar more visible on mobile */
+    .progress {
+        height: 1.25rem;
+    }
+
+    /* Adjust header for mobile */
+    .header {
+        flex-direction: column;
+        text-align: center;
+        padding: 1rem;
+    }
+
+    .user-info {
+        float: none;
+        margin-top: 1rem;
+        justify-content: center;
+    }
+
+    .dashboard-title {
+        margin: 1rem 0;
+    }
+}
+
+/* Add data labels for mobile view */
+.table td[data-label] {
+    position: relative;
+}
+
+/* Improve table header visibility */
+.table th {
+    white-space: nowrap;
+    background-color: #f8f9fa;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+/* Add hover effect for better interaction */
+.table tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Improve link visibility */
+.f_name a {
+    color: #005992;
+    text-decoration: none;
+    word-break: break-all;
+}
+
+.f_name a:hover {
+    text-decoration: underline;
+}
+
+/* Add container padding for mobile */
+@media screen and (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+}

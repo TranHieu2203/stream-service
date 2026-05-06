@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard VBI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/dashboard.css" rel="stylesheet">
+    <script type="text/javascript" src="/jquery-3.6.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div class="header">
+        <img src="/assets/svgs/logo_vbi.svg" alt="VBI" class="vbi-logo">
+        <h1 class="dashboard-title">Dashboard Hệ thống VBI Streaming</h1>
+        <div class="user-info">
+            <span class="user-name"><%= user ? user.name : 'User' %></span>
+            <form action="/logout" method="POST">
+                <button type="submit" class="btn btn-logout">Đăng xuất</button>
+            </form>
+        </div>
+    </div>
+    <div class="container">
+        <!-- System Health Card - PHẦN CŨ GIỮ NGUYÊN -->
+        <div class="card p-4 mb-4">
+            <h4 class="mb-3">Tình trạng hệ thống</h4>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Dung lượng ổ đĩa</h5>
+                            <div class="progress mb-2">
+                                <div id="disk-usage-bar" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <small>Đã sử dụng: <span id="disk-used">0 GB</span></small>
+                                <small>Còn trống: <span id="disk-free">0 GB</span></small>
+                            </div>
+                            <small>Tổng dung lượng: <span id="disk-total">0 GB</span></small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Thống kê hệ thống</h5>
+                            <div class="row">
+                                <div class="col-6">
+                                    <p>Số phiên đang hoạt động: <span id="active-sessions">0</span></p>
+                                    <p>Số process đang chạy: <span id="active-processes">0</span></p>
+                                </div>
+                                <div class="col-6">
+                                    <p>Số file đã ghi: <span id="file-count">0</span></p>
+                                    <p>Cập nhật lúc: <span id="last-update">--</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MONITORING SECTION MỚI - THÊM VÀO -->
+        <div class="card p-4 mb-4">
+            <h4 class="mb-3">Giám sát hệ thống thời gian thực</h4>
+            <div class="row">
+                <!-- CPU Usage -->
+                <div class="col-md-6 mb-3">
+                    <div class="monitoring-card">
+                        <h6>Sử dụng CPU</h6>
+                        <div class="progress mb-2">
+                            <div id="cpu-progress" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <small id="cpu-details">Đang tải...</small>
+                    </div>
+                </div>
+                
+                <!-- Memory Usage -->
+                <div class="col-md-6 mb-3">
+                    <div class="monitoring-card">
+                        <h6>Sử dụng bộ nhớ</h6>
+                        <div class="progress mb-2">
+                            <div id="memory-progress" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <small id="memory-details">Đang tải...</small>
+                    </div>
+                </div>
+                
+                <!-- System Info -->
+                <div class="col-md-6 mb-3">
+                    <div class="monitoring-card">
+                        <h6>Thông tin hệ thống</h6>
+                        <div id="system-info">
+                            <small>Tên máy chủ: <span id="hostname">--</span></small><br>
+                            <small>Thời gian hoạt động: <span id="uptime">--</span></small><br>
+                            <small>Hệ điều hành: <span id="platform">--</span></small>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Process Info -->
+                <div class="col-md-6 mb-3">
+                    <div class="monitoring-card">
+                        <h6>Thông tin tiến trình</h6>
+                        <div id="process-info">
+                            <small>ID tiến trình: <span id="process-pid">--</span></small><br>
+                            <small>Bộ nhớ: <span id="process-memory">--</span></small><br>
+                            <small>Phiên bản: <span id="process-version">--</span></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Real-time Logs - PHẦN MỚI -->
+        <div class="card p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="mb-0">Nhật ký hệ thống thời gian thực</h4>
+                <a href="/logs-dashboard" class="btn btn-primary">
+                    📊 Xem chi tiết logs
+                </a>
+            </div>
+            <div class="log-container">
+                <div id="log-content" class="log-content">
+                    <div class="text-muted text-center">Đang tải nhật ký...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PHẦN CŨ GIỮ NGUYÊN -->
+        <div class="card p-4 mb-4">
+            <h4 class="mb-3">Thống kê hệ thống</h4>
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <tr>
+                        <th>Session</th>
+                        <th>Peer</th>
+                        <th>Producer</th>
+                        <th>Consumer</th>
+                        <th>Socket Client</th>
+                        <th>Record Process</th>
+                    </tr>
+                    <tr>
+                        <td data-label="Session" id="tt_session">--</td>
+                        <td data-label="Peer" id="tt_streamer">--</td>
+                        <td data-label="Producer" id="tt_producer">--</td>
+                        <td data-label="Consumer" id="tt_consumer">--</td>
+                        <td data-label="Socket Client" id="tt_socketclient">--</td>
+                        <td data-label="Record Process" id="tt_process">--</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="card p-4 mb-4">
+            <h4 class="mb-3">Danh sách phiên làm việc</h4>
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <tr>
+                        <th>Session</th>
+                        <th>Create At</th>
+                        <th>Recording</th>
+                        <th>Record file</th>
+                        <th>Viewer</th>
+                    </tr>
+                    <tbody id="list-session"></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card p-4">
+            <h4 class="mb-3">Danh sách file ghi</h4>
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <tr>
+                        <th>Session</th>
+                        <th>Time</th>
+                        <th>Record</th>
+                    </tr>
+                    <tbody id="list-file"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script src="/js/dashboard.js"></script>
+    <script src="/js/monitoring.js"></script>
+    <script type="text/javascript" src="/script.js"></script>
+</body>
+
+</html>
+</html>

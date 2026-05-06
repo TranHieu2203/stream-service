@@ -1,0 +1,5 @@
+ffmpeg -i video.mp4 -vf "drawtext=text='Timestamp\: %{pts\:gmtime\:0\:%M\\\:%S}.':x=10:y=30:fontsize=15:fontcolor=green" -c:a copy output.mp4
+
+
+
+ffmpeg -i 9f12a575-e9df-4fef-a3fc-70a671d15f36.webm -crf 1 -c:v libx264 vid-3.mp4
