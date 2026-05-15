@@ -83,4 +83,5 @@ app.get('/logs-dashboard', requireLogin, (req, res, next) => {
 
 webServer.listen(process.env.PORT, () => {
   console.info(`STREAMING SERVICE START AT PORT ${process.env.PORT}`)
+  console.info(`[DEPLOY] fix/black-video-recording: event-based FFmpeg/GStreamer ready detection, SDP CRLF, waitForFileComplete 0-byte fix`)
 });

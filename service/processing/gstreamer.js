@@ -29,7 +29,21 @@ module.exports = class GStreamer {
     this.recordEvent = recordEvent
     this._process = undefined;
     this._observer = new EventEmitter();
+    this._ready = false;
+    this._readyPromise = new Promise((resolve, reject) => {
+      this._resolveReady = resolve;
+      this._rejectReady  = reject;
+    });
     this._createProcess();
+  }
+
+  // Trả về Promise resolve khi GStreamer đã chuyển sang trạng thái PLAYING và sẵn sàng nhận RTP.
+  // fallbackMs: nếu không nhận được tín hiệu trong thời gian này thì tiếp tục luôn (không crash).
+  ready(fallbackMs = 2000) {
+    return Promise.race([
+      this._readyPromise,
+      new Promise(resolve => setTimeout(resolve, fallbackMs))
+    ]);
   }
 
   _createProcess() {
@@ -57,13 +71,18 @@ module.exports = class GStreamer {
 
     this._process.on('error', error => {
       log.Error('gstreamer::process::error', this._process.pid, error);
-      // console.error('gstreamer::process::error [pid:%d, error:%o]', this._process.pid, error)
-    }
-
-    );
+      if (!this._ready) {
+        this._ready = true;
+        this._rejectReady(error);
+      }
+    });
 
     this._process.once('close', () => {
       console.log('gstreamer::process::close [pid:%d]', this._process.pid);
+      if (!this._ready) {
+        this._ready = true;
+        this._rejectReady(new Error('GStreamer process closed before ready'));
+      }
       this._observer.emit('process-close');
       try {
         // ===== PHẦN CONVERT ĐÃ ĐƯỢC COMMENT ĐỂ TRÁNH TRÙNG LẶP =====
@@ -154,13 +173,21 @@ module.exports = class GStreamer {
 
     this._process.stderr.on('data', data => {
       // console.log('gstreamer::process::stderr::data [data:%o]', data)
-    }
-    );
+    });
 
+    let _stdoutBuffer = '';
     this._process.stdout.on('data', data => {
       // console.log('gstreamer::process::stdout::data', this._process.pid, ' / ', data)
-    }
-    );
+      if (!this._ready) {
+        _stdoutBuffer += data;
+        // "New clock" xuất hiện khi GStreamer chuyển sang trạng thái PLAYING — đang lắng nghe UDP
+        if (_stdoutBuffer.includes('New clock') || _stdoutBuffer.includes('Setting pipeline to PLAYING')) {
+          this._ready = true;
+          this._resolveReady();
+          _stdoutBuffer = '';
+        }
+      }
+    });
   }
 
   kill() {
