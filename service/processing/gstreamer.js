@@ -114,59 +114,32 @@ module.exports = class GStreamer {
         //     .save(outfilepath)
         // }, 2000);
         
-        // CODE MỚI: Sử dụng file ready check thay vì setTimeout
         const webmPath = `${RECORD_FILE_LOCATION_PATH}/${this._rtpParameters.fileName}.webm`;
-        log.Info('GStreamer process finished, bắt đầu check file ready', {
-            fileName: this._rtpParameters.fileName,
-            webmPath: webmPath,
-            timestamp: new Date().toISOString()
-        });
-        
-        // Sử dụng file ready check với progressive delay
+        console.log(`[GSTREAMER] close handler running - file=${this._rtpParameters.fileName}`);
+
         const checkFileAndCallRecordEvent = async () => {
             try {
-                // Import waitForFileReady từ controller/Streaming.js
+                console.log(`[GSTREAMER] checking webm file - path=${webmPath}`);
                 const { waitForFileReady } = require('../../controller/Streaming');
-                
                 const isReady = await waitForFileReady(webmPath, 3);
+                console.log(`[GSTREAMER] waitForFileReady result=${isReady} - file=${this._rtpParameters.fileName}`);
                 if (isReady) {
-                    log.Info('File webm sẵn sàng, gọi recordEvent', {
-                        fileName: this._rtpParameters.fileName,
-                        webmPath: webmPath,
-                        timestamp: new Date().toISOString()
-                    });
+                    console.log(`[GSTREAMER] calling recordEvent(null) - file=${this._rtpParameters.fileName}`);
                     recordEvent(null, record_data);
                 } else {
-                    log.Error('File webm không sẵn sàng sau tất cả attempts, báo lỗi', {
-                        fileName: this._rtpParameters.fileName,
-                        webmPath: webmPath,
-                        timestamp: new Date().toISOString()
-                    });
-                    recordEvent({ 
-                        error: 'File webm không sẵn sàng sau multiple checks' 
-                    }, record_data);
+                    console.error(`[GSTREAMER] webm not ready, calling recordEvent with error - file=${this._rtpParameters.fileName}`);
+                    recordEvent({ error: 'File webm không sẵn sàng sau multiple checks' }, record_data);
                 }
             } catch (error) {
-                log.Error('Lỗi trong quá trình check file và gọi recordEvent', {
-                    fileName: this._rtpParameters.fileName,
-                    error: error.message,
-                    timestamp: new Date().toISOString()
-                });
-                recordEvent({ 
-                    error: `File check failed: ${error.message}` 
-                }, record_data);
+                console.error(`[GSTREAMER] checkFileAndCallRecordEvent exception - ${error.message}`);
+                recordEvent({ error: `File check failed: ${error.message}` }, record_data);
             }
         };
-        
-        // Gọi function check file
+
         checkFileAndCallRecordEvent();
 
       } catch (e) {
-        log.Error('GSTREAMER ERROR', {
-            fileName: this._rtpParameters.fileName,
-            error: e.message,
-            timestamp: new Date().toISOString()
-        });
+        console.error(`[GSTREAMER] close handler sync error - ${e.message}`);
       }
 
     });
