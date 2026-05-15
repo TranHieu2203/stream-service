@@ -15,7 +15,21 @@ module.exports = class FFmpeg {
     this._rtpParameters = rtpParameters;
     this._process = undefined;
     this._observer = new EventEmitter();
+    this._ready = false;
+    this._readyPromise = new Promise((resolve, reject) => {
+      this._resolveReady = resolve;
+      this._rejectReady  = reject;
+    });
     this._createProcess();
+  }
+
+  // Trả về Promise resolve khi FFmpeg đã bind UDP port và sẵn sàng nhận RTP.
+  // fallbackMs: nếu không nhận được tín hiệu sẵn sàng trong thời gian này thì tiếp tục luôn (không crash).
+  ready(fallbackMs = 3000) {
+    return Promise.race([
+      this._readyPromise,
+      new Promise(resolve => setTimeout(resolve, fallbackMs))
+    ]);
   }
 
   _createProcess() {
@@ -30,11 +44,18 @@ module.exports = class FFmpeg {
     if (this._process.stderr) {
       this._process.stderr.setEncoding('utf-8');
 
+      let _stderrBuffer = '';
       this._process.stderr.on('data', data => {
-        console.log('ffmpeg::process::data [data:%o]', data)
-      }
-
-      );
+        console.log('ffmpeg::process::data [data:%o]', data);
+        if (!this._ready) {
+          _stderrBuffer += data;
+          if (_stderrBuffer.includes('Input #0, sdp')) {
+            this._ready = true;
+            this._resolveReady();
+            _stderrBuffer = '';
+          }
+        }
+      });
     }
 
     if (this._process.stdout) {
@@ -52,12 +73,19 @@ module.exports = class FFmpeg {
     });
 
     this._process.on('error', error => {
-      console.error('ffmpeg::process::error [error:%o]', error)
-    }
-    );
+      console.error('ffmpeg::process::error [error:%o]', error);
+      if (!this._ready) {
+        this._ready = true;
+        this._rejectReady(error);
+      }
+    });
 
     this._process.once('close', () => {
       console.log('ffmpeg::process::close');
+      if (!this._ready) {
+        this._ready = true;
+        this._rejectReady(new Error('FFmpeg process closed before ready'));
+      }
       try {
         // ===== PHẦN CONVERT ĐÃ ĐƯỢC COMMENT ĐỂ TRÁNH TRÙNG LẶP =====
         // LÝ DO COMMENT: 

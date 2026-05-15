@@ -912,18 +912,19 @@ const initStreaming = async (socketServer) => {
 
                 log.Info(`Recording process started successfully - SessionId: ${client.session_id}, ClientId: ${client.ussid}, FileName: ${recordInfo.fileName}, Producers: ${peer.producers.length}`, 'StreamingService', 'start-record');
             }
-            setTimeout(async () => {
-                for (const consumer of peer.process_consumer) {
-                    // Sometimes the consumer gets resumed before the GStreamer process has fully started
-                    // so wait a couple of seconds
+            const _proc = _process[session.id];
+            const _consumersSnapshot = [...peer.process_consumer];
+            _proc.ready().then(async () => {
+                for (const consumer of _consumersSnapshot) {
                     if (_consumers[consumer.id]) {
                         await _consumers[consumer.id].resume();
                         await _consumers[consumer.id].requestKeyFrame();
                     }
                 }
-                
-                log.Info(`Recording consumers resumed - SessionId: ${client.session_id}, ConsumersCount: ${peer.process_consumer.length}`, 'StreamingService', 'start-record');
-            }, 1000);
+                log.Info(`Recording consumers resumed - SessionId: ${client.session_id}, ConsumersCount: ${_consumersSnapshot.length}`, 'StreamingService', 'start-record');
+            }).catch(err => {
+                log.Error(`FFmpeg ready error, consumers not resumed - SessionId: ${client.session_id}, Error: ${err.message}`, 'StreamingService', 'start-record');
+            });
             callback({ sucess: true, file_id: `${recordInfo.fileName}` });
         });
 
@@ -1778,7 +1779,7 @@ const waitForFileComplete = async (filePath, timeout = 30000) => {
     const currentSize = stats.size;
     await new Promise(resolve => setTimeout(resolve, 1000));
     const newStats = fs.statSync(filePath);
-    if (newStats.size === currentSize) {
+    if (newStats.size > 0 && newStats.size === currentSize) {
       return true; // File size không đổi trong 1 giây, có thể đã ghi xong
     }
   }
