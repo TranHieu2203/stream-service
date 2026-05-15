@@ -8,3 +8,8 @@ npm-debug.log
 .nyc
 .env
 .DS_Store
+
+# BMad và AI tooling
+_bmad/
+_bmad-output/
+.claude/
