@@ -1334,16 +1334,18 @@ const broadcasting_to_subs = async (session_id, key, data) => {
 
 const recordEvent = async (error, data) => {
     const startTime = Date.now();
-    
+
     try {
+        console.info(`[RECORD-EVENT] start - session=${data.session_id} socket=${data.socket_id} hasError=${!!error}`);
         log.Info(`Record event triggered - SessionId: ${data.session_id}, SocketId: ${data.socket_id}, HasError: ${!!error}`, 'StreamingService', 'recordEvent');
-        
+
         if (error) {
             log.Error(`Record event error - SessionId: ${data.session_id}, SocketId: ${data.socket_id}, Error: ${error.message}`, 'StreamingService', 'recordEvent');
+            console.error(`[RECORD-EVENT] error received, skipping convert/upload - ${error.message}`);
             console.error("Record error:", error);
-            _socketIO.to(data.socket_id).emit("upload-status", { 
-                status: false, 
-                error: error.message 
+            _socketIO.to(data.socket_id).emit("upload-status", {
+                status: false,
+                error: error.message
             });
             return;
         }
@@ -1363,14 +1365,17 @@ const recordEvent = async (error, data) => {
         const webmPath = `${appRoot.path}/public/files/${session.record_file_id}.webm`;
         const mp4Path = `${appRoot.path}/public/files/${session.record_file_id}.mp4`;
 
+        console.info(`[CONVERT] starting webm -> mp4 | file=${session.record_file_id}`);
         log.Info(`Starting conversion to mp4 - SessionId: ${data.session_id}, RecordFileId: ${session.record_file_id}`, 'StreamingService', 'recordEvent');
 
         const convertSuccess = await convertToMp4(webmPath, mp4Path);
         if (!convertSuccess) {
             const convertErrorTime = Date.now() - startTime;
-        log.Error(`Failed to convert to mp4 - SessionId: ${data.session_id}, TotalTime: ${(convertErrorTime / 1000).toFixed(2)}s`, 'StreamingService', 'recordEvent');
+            console.error(`[CONVERT] failed | file=${session.record_file_id} elapsed=${(convertErrorTime/1000).toFixed(1)}s`);
+            log.Error(`Failed to convert to mp4 - SessionId: ${data.session_id}, TotalTime: ${(convertErrorTime / 1000).toFixed(2)}s`, 'StreamingService', 'recordEvent');
             throw new Error('Failed to convert to mp4');
         }
+        console.info(`[CONVERT] done | file=${session.record_file_id} elapsed=${((Date.now()-startTime)/1000).toFixed(1)}s`);
 
         log.Info(`Conversion completed successfully - SessionId: ${data.session_id}, TotalTime: ${(Date.now() - startTime) / 1000}s`, 'StreamingService', 'recordEvent');
 
@@ -1383,55 +1388,55 @@ const recordEvent = async (error, data) => {
         
         // Check if this is a mobile source
         if (session.mobile_metadata && isMobileSource(session.mobile_metadata.source)) {
-            // Upload to mobile API
+            console.info(`[UPLOAD] flow=MOBILE source=${session.mobile_metadata.source} file=${session.record_file_id}`);
             log.Info(`=== MOBILE FLOW === Uploading to mobile API - Source: ${session.mobile_metadata.source}, SessionId: ${data.session_id}`, 'StreamingService', 'recordEvent');
-            
+
             await enqueueUpload(() => uploadMobileVideo(mp4Path, session.mobile_metadata, (success) => {
                 if (success) {
+                    console.info(`[UPLOAD] MOBILE success | file=${session.record_file_id}`);
                     log.Info(`=== MOBILE FLOW === Mobile upload completed successfully - Source: ${session.mobile_metadata.source}, SessionId: ${data.session_id}`, 'StreamingService', 'recordEvent');
-                    
-                    _socketIO.to(data.socket_id).emit("upload-status", { 
-                        status: true, 
+                    _socketIO.to(data.socket_id).emit("upload-status", {
+                        status: true,
                         file_id: session.record_file_id + upload_file_extends,
                         source: session.mobile_metadata.source
                     });
                 } else {
+                    console.error(`[UPLOAD] MOBILE failed | file=${session.record_file_id}`);
                     log.Error(`=== MOBILE FLOW === Mobile upload failed - Source: ${session.mobile_metadata.source}, SessionId: ${data.session_id}`, 'StreamingService', 'recordEvent');
-                    
-                    _socketIO.to(data.socket_id).emit("upload-status", { 
-                        status: false, 
+                    _socketIO.to(data.socket_id).emit("upload-status", {
+                        status: false,
                         error: "Mobile upload failed",
                         source: session.mobile_metadata.source
                     });
                 }
             }));
         } else {
-            // Upload to original API (existing LDP flow)
+            console.info(`[UPLOAD] flow=LDP file=${session.record_file_id} url=${process.env.AAD_API_BASE}/sapi/${process.env.ACTION_STORAGE}`);
             log.Info(`=== LDP FLOW === Uploading to original LDP API - SessionId: ${data.session_id}`, 'StreamingService', 'recordEvent');
-            
+
             try {
                 await enqueueUpload(() => openAPIAddFile(mp4Path, session.record_file_id + upload_file_extends, (success) => {
                     if (success) {
+                        console.info(`[UPLOAD] LDP success | file=${session.record_file_id}`);
                         log.Info(`=== LDP FLOW === LDP API upload completed successfully - SessionId: ${data.session_id}`, 'StreamingService', 'recordEvent');
-                        
-                        _socketIO.to(data.socket_id).emit("upload-status", { 
-                            status: true, 
+                        _socketIO.to(data.socket_id).emit("upload-status", {
+                            status: true,
                             file_id: session.record_file_id + upload_file_extends,
                         });
                     } else {
+                        console.error(`[UPLOAD] LDP failed | file=${session.record_file_id}`);
                         log.Error(`=== LDP FLOW === LDP API upload failed - SessionId: ${data.session_id}`, 'StreamingService', 'recordEvent');
-                        
-                        _socketIO.to(data.socket_id).emit("upload-status", { 
-                            status: false, 
+                        _socketIO.to(data.socket_id).emit("upload-status", {
+                            status: false,
                             error: "LDP API upload failed",
                         });
                     }
                 }));
             } catch (uploadError) {
+                console.error(`[UPLOAD] LDP exception | file=${session.record_file_id} error=${uploadError.message}`);
                 log.Error(`=== LDP FLOW === LDP API upload error - SessionId: ${data.session_id}, Error: ${uploadError.message}`, 'StreamingService', 'recordEvent');
-                
-                _socketIO.to(data.socket_id).emit("upload-status", { 
-                    status: false, 
+                _socketIO.to(data.socket_id).emit("upload-status", {
+                    status: false,
                     error: uploadError.message,
                 });
             }
