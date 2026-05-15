@@ -178,7 +178,9 @@ const detectHardwareCapability = (sysInfo) => {
   };
 };
 
+let _cachedHardwareSettings = null;
 const getOptimizedFFmpegSettings = () => {
+  if (_cachedHardwareSettings) return _cachedHardwareSettings;
   const sysInfo = getSystemInfo();
   
   log.Info(`CPU Cores: ${sysInfo.cpuCores}, RAM: ${(sysInfo.totalMemory / 1024 / 1024 / 1024).toFixed(1)}GB`, 'StreamingService', 'getOptimizedFFmpegSettings');
@@ -247,8 +249,9 @@ const getOptimizedFFmpegSettings = () => {
   };
   
   log.Info(`FFmpeg Settings Applied - Unified Environment, Hardware: ${hardwareCapability.level} Level, Reason: Single optimized configuration for 4 cores, using ${hardwareCapability.preset} preset with ${hardwareCapability.meMethod} motion estimation`, 'StreamingService', 'getOptimizedFFmpegSettings');
-    
-    return settings;
+
+  _cachedHardwareSettings = settings;
+  return settings;
 };
 
 const getMemoryOptimizedSettings = (baseSettings) => {
@@ -1810,18 +1813,18 @@ const convertToMp4 = async (webmPath, mp4Path) => {
       throw new Error(`Cannot read webm file: ${accessError.message}`);
     }
     
-    // Check if file is actually a webm file by reading header
+    // Check if file is actually a webm file by reading first 4 bytes (EBML magic)
     try {
-      const header = fs.readFileSync(webmPath, { start: 0, end: 31 });
-      const headerStr = header.toString('hex');
-      
-      // Check for webm signature (EBML header)
+      const buf = Buffer.alloc(4);
+      const fd = fs.openSync(webmPath, 'r');
+      fs.readSync(fd, buf, 0, 4, 0);
+      fs.closeSync(fd);
+      const headerStr = buf.toString('hex');
       if (!headerStr.startsWith('1a45dfa3')) {
-        log.Error(`File does not appear to be a valid webm file - Header: ${headerStr.substring(0, 16)}`, 'StreamingService', 'convertToMp4');
+        log.Error(`File does not appear to be a valid webm file - Header: ${headerStr}`, 'StreamingService', 'convertToMp4');
         throw new Error('File không phải là webm hợp lệ');
       }
-      
-      log.Info(`Webm file header validation passed - Header: ${headerStr.substring(0, 16)}`, 'StreamingService', 'convertToMp4');
+      log.Info(`Webm file header validation passed - Header: ${headerStr}`, 'StreamingService', 'convertToMp4');
     } catch (headerError) {
       log.Error(`Header validation failed - ${headerError.message}`, 'StreamingService', 'convertToMp4');
       // Continue anyway, let ffprobe handle it
@@ -1972,7 +1975,8 @@ const convertToMp4 = async (webmPath, mp4Path) => {
     // Phân tích thông tin thiết bị từ metadata
     const width = videoStream.width;
     const height = videoStream.height;
-    const fps = eval(videoStream.r_frame_rate);
+    const [fpsNum, fpsDen] = videoStream.r_frame_rate.split('/');
+    const fps = fpsDen && +fpsDen !== 0 ? +fpsNum / +fpsDen : +fpsNum;
     
     log.Info(`Video stream analysis - Width: ${width}, Height: ${height}, FPS: ${fps}`, 'StreamingService', 'convertToMp4');
     
@@ -2029,18 +2033,7 @@ const convertToMp4 = async (webmPath, mp4Path) => {
 
     // ADD FILTERS: Đơn giản hóa filters để tránh conflict
     // Chỉ cap FPS và denoise nhẹ để tránh lỗi conversion
-    if (enableLightFilters) {
-      // Chỉ dùng fps cap + denoise rất nhẹ để tránh conflict
-      const simpleFilters = 'fps=30,hqdn3d=0.2:0.2:1:1';
-      outputOptions.push('-vf');
-      outputOptions.push(simpleFilters);
-      log.Info(`Simple filters applied - fps=30 + light denoise`, 'StreamingService', 'convertToMp4');
-    } else {
-      // Chỉ cap FPS để tránh file phình to
-      outputOptions.push('-vf');
-      outputOptions.push('fps=30');
-      log.Info(`FPS cap applied (30fps) only`, 'StreamingService', 'convertToMp4');
-    }
+    outputOptions.push('-vf', 'fps=30');
 
     // ============================================================================
     // AUDIO SETTINGS - TỐI ƯU CHO TỐC ĐỘ VÀ CHẤT LƯỢNG

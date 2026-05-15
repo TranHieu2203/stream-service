@@ -171,7 +171,7 @@ module.exports = class FFmpeg {
   get _commandArgs() {
     let commandArgs = [
       '-loglevel',
-      'debug',
+      'info',
       '-protocol_whitelist',
       'pipe,udp,rtp',
       '-fflags',
