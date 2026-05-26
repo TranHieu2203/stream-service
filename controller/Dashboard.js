@@ -5,11 +5,88 @@ const fileFolder = './public/files/';
 const path = require('path')
 const fs = require('fs')
 const fsPromises = require('fs/promises')
+const os = require('os')
+const { execSync } = require('child_process')
+const mediasoup = require('mediasoup');
 const RedisC = require("../service/Redis");
 const StreamingController = require("./Streaming");
+const mds = require("../service/core/mds");
 const diskusage = require('diskusage');
 
 const Redis = new RedisC()
+
+// ============================================================
+// Diagnostic helpers — dùng để so sánh UAT vs PROD
+// HieuTV: Gỡ sau khi xong debug
+// ============================================================
+function safeExec(cmd) {
+  try {
+    return execSync(cmd, { encoding: "utf8", timeout: 2000 }).trim();
+  } catch (e) {
+    return `ERR: ${e.message}`;
+  }
+}
+
+let workerVersionCache = null;
+function getWorkerVersion() {
+  if (workerVersionCache) return workerVersionCache;
+  try {
+    const workerBin = path.resolve(
+      process.cwd(),
+      "node_modules/mediasoup/worker/out/Release/mediasoup-worker"
+    );
+    workerVersionCache = safeExec(`"${workerBin}" --version`);
+  } catch (e) {
+    workerVersionCache = `ERR: ${e.message}`;
+  }
+  return workerVersionCache;
+}
+
+async function buildDiag() {
+  let routerRtpCapabilities = null;
+  let routerErr = null;
+  try {
+    const router = await mds.getRouter(0);
+    if (router && router.rtpCapabilities) {
+      routerRtpCapabilities = router.rtpCapabilities;
+    } else {
+      routerErr = "router not initialized";
+    }
+  } catch (e) {
+    routerErr = e.message;
+  }
+  return {
+    timestamp: new Date().toISOString(),
+    hostname: os.hostname(),
+    mediasoup: {
+      js_version: mediasoup.version,
+      worker_version: getWorkerVersion(),
+    },
+    router_rtp_capabilities: routerRtpCapabilities,
+    router_error: routerErr,
+    config_media_codecs: config.router && config.router.mediaCodecs ? config.router.mediaCodecs : null,
+    runtime: {
+      node: process.version,
+      platform: os.platform(),
+      release: os.release(),
+      arch: os.arch(),
+    },
+    env: {
+      NODE_ENV: process.env.NODE_ENV || null,
+      EXTIP: process.env.EXTIP || null,
+      PORT: process.env.PORT || null,
+    },
+    git: {
+      branch: safeExec("git branch --show-current"),
+      commit: safeExec("git rev-parse HEAD"),
+      commit_short: safeExec("git rev-parse --short HEAD"),
+      log_3: safeExec("git log --oneline -3"),
+    },
+    package_lock_mediasoup: safeExec(
+      "grep -A 1 '\"node_modules/mediasoup\"' package-lock.json | head -3"
+    ),
+  };
+}
 
 const getStats = async (req, res, next) => {
     try {
@@ -37,6 +114,9 @@ const getStats = async (req, res, next) => {
         // Get system health information
         const health = await getSystemHealth();
 
+        // Thông tin chẩn đoán — dùng để so sánh UAT vs PROD (tạm thời, gỡ sau khi xong)
+        const diag = await buildDiag();
+
         res.send({
             ok: 1,
             total_session: list_session.length,
@@ -44,12 +124,13 @@ const getStats = async (req, res, next) => {
             mor: StreamingController.getStats(),
             files: lines ? lines.reverse() : [],
             list_session: sessionDetails.filter(s => s !== null),
-            system_health: health
+            system_health: health,
+            diag
         })
     } catch (e) {
         console.error('Error getting stats:', e);
-        res.send({ 
-            ok: 0, 
+        res.send({
+            ok: 0,
             error: 'Failed to get system stats',
             system_health: null
         });
