@@ -23,7 +23,7 @@
     "fluent-ffmpeg": "^2.1.2",
     "fluent-ffmpeg-multistream": "^1.0.0",
     "form-data": "^4.0.0",
-    "mediasoup": "^3.10.6",
+    "mediasoup": "3.10.6",
     "node-file-logger": "^0.9.5",
     "socket.io": "^4.5.1",
     "tree-kill": "^1.2.2",
